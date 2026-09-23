@@ -1,237 +1,290 @@
-workflow baru
+```
+88888ba   888 888  888  888 8888888bad88ba
+888 "888  888 888  888  888 888  "888  "88b
+888  888  888 888  888  888 888   888   888
+888  Y88b 888 Y88b 888 d88P 888   888   888
+888   "Y88888  "Y8888888P"  888   888   888
+```
 
-nuwm tidak memiliki workspace, jadi ada trick khusus membuatnya seolah olah workspace
-tapi anda tetap bisa mendapatkan rasa seperti workspace ketika 2 cllient atau lebih memiliki ukuran jendela yg berbeda, misal jika 2 jendela split, anda bisa memfokuksn kedua jendela itu untuk langsung menampilkan keduanya.
+# nuwm (Not Micro Window Manager)
 
-keungguna multicommand dan multitarget
-f12 -> fokus 2 client sekaligus
-r12 960 1080 m2 960 0 -> membuat 2 client split
+**nuwm** adalah pengelola jendela (*window manager*) sederhana untuk X11 yang dibangun menggunakan library XCB.
 
+**nuwm** hanya menyediakan perintah-perintah primitif yang umum digunakan. Pola penggunaan muncul langsung dari interaksi pengguna dengan **nuwm**. Tidak ada status bar, widget, atau dekorasi di layar. **nuwm** hanya menyediakan perintah pengatur jendela tanpa mengatur layout secara otomatis.
 
+Tidak ada *workspace* khusus. Hanya ada **9 slot client** yang tersedia. **nuwm** hanya menyimpan dua state fokus di dalam memori:
 
+- `focus_curr`: Fokus jendela saat ini.
+- `focus_prev`: Fokus jendela sebelumnya.
 
+## Spesifikasi Teknis (Glibc)
 
+- **Source Code:** ~200 LOC (Single `.c` file)
+- **Binary Size:** ~6.5 KB
+- **RAM Footprint:** ~2 MB Resident (RES) / ~150 KB Private (PRIV)
 
+## Requirements
 
+Sebelum mengompilasi **nuwm**, pastikan dependensi berikut sudah terinstall di sistem Anda:
 
+- `libxcb`
+- `gcc`
+- `make`
 
+## Cara Instalasi, Menjalankan & Uninstall
 
-
-
-xlsfonts | grep terminus | less
-xset fp+ /usr/share/fonts/X11/misc/
-xset fp rehash
-
-cc -Os nuwm.c -o nuwm_debug -lX11 -lXft -lfontconfig -I/usr/include/freetype2
-nm --size-sort -S --radix=d nuwm_debug | tail -n 20
-
-sudo xbps-install -S xsetroot
-
-perlu mengistall itu jika pake status bar
-
-
-
-
-# nuwm
-
-Window manager monolitik ultra-ringkas berbasis X11 untuk Linux.
-
----
-
-## Prasyarat & Catatan Penting (Dependencies & Environment)
-
-`nuwm` **tidak melakukan runtime error checking** pada inisialisasi resource (seperti alokasi memori, koneksi display, font, maupun windowing) demi meminimalkan ukuran biner. 
-
-Jika ada syarat yang tidak terpenuhi, `nuwm` akan langsung mengalami **Segmentation Fault (Crash)** tanpa menampilkan pesan error.
-
-Pastikan hal-hal berikut sudah terpenuhi sebelum menjalankan `nuwm`:
-
-### 1. System Libraries (Build-time & Runtime)
-- `libX11`
-- `libXft` (secara otomatis menarik `libfontconfig` dan `freetype2` sebagai dependensi)
-
-### 2. Runtime Environment & Font Setup
-- **Single Window Manager:** Pastikan **TIDAK ADA Window Manager lain** (seperti `dwm`, `i3`, `openbox`, dll) atau Compositor mandiri yang sedang berjalan di *display* yang sama.
-- **X11 Server Active:** X Server wajib sudah berjalan dan variabel `$DISPLAY` terkonfigurasi dengan benar (dipanggil dari `.xinitrc` atau via `startx`).
-- **Valid Font System:** Font yang ditaruh pada `FONT_NAME` di `config.h` (default: `monospace:size=10`) **wajib ter-install dan terdaftar** di fontconfig.
-
-Sebelum kompilasi, pastikan font sistem sudah ter-cache dengan benar:
+### Install
 
 ```bash
-# Perbarui cache font sistem
-fc-cache -vf
-
-# Cek apakah font sudah terdeteksi
-fc-list : family | grep -i monospace
-
-
-
-
-
-
-
-
-
-
-
-
-
-# Cut dari slot 1, lalu Paste ke slot 3 dalam 1 perintah
-echo "x1 p3" > /tmp/uwm
-
-# 1. Cut slot 1, paste ke slot 3
-echo "x1 p3" > /tmp/uwm
-
-# 2. Cut slot 2, paste ke slot 1
-echo "x2 p1" > /tmp/uwm
-
-# 3. Cut slot 3, paste ke slot 2
-echo "x3 p2" > /tmp/uwm
-
-arg 0 artinya prev focus (f0, m0, k0)
-no arg artinya focus (f, m, k)
-
-
-
-# uwm — micro window manager
-
-```
-88888b.   888 888  888  888 88888888b.d88b.  
-888 "888  888 888  888  888 888  "888  "88b 
-888  888  888 888  888  888 888   888   888 
-888  Y88b 888 Y88b 888 d88P 888   888   888 
-888   "Y88888  "Y8888888P"  888   888   888 
-                                              
+git clone https://github.com/Rhevalk/nuwm.git
+cd nuwm
+sudo make clean install
 ```
 
-**uwm** (Micro Window Manager) adalah pengelola jendela extream minimalis untuk X11 yang dibangun menggunakan XCB.
+### Menjalankan
 
-Desain `uwm` berpusat pada sekumpulan operasi dasar yang dapat dikombinasikan secara langsung. Tata letak dan pola penggunaan muncul dari interaksi operasi-operasi tersebut, bukan dari aturan tata letak yang ditentukan sebelumnya.
-
----
-
-## Filosofi
-
-`uwm` tidak menyediakan bar, widget, mode layout otomatis, atau indikator status visual apa pun. Sistem ini memaksa Anda untuk menggunakan memori organik (otak) untuk mengingat status *workspace* dan jendela. Jika Anda merasa kelelahan, itu adalah indikator alami dari tubuh bahwa Anda perlu segera mengurangi beban kerja.
-
-Karena tidak ada informasi visual mengenai *workspace* dan *client*, Anda perlu memastikan *launcher* pertama dapat bekerja untuk memunculkan aplikasi. Dari sanalah Anda dapat menguji dan merasakan bagaimana `uwm` sebenarnya bekerja.
-
----
-
-## Konsep Pengelola Jendela
-
-`uwm` tidak memiliki mode pengatur jendela statis (seperti *tiling/floating*), melainkan mengandalkan kumpulan operasi dasar yang dapat menghasilkan banyak perilaku tata letak tanpa perlu dideklarasikan secara eksplisit.
-
-Secara fundamental, `uwm` melakukan *tiling* (memaksimalkan ukuran) pada setiap jendela baru, namun tidak meletakkannya berdampingan secara otomatis, melainkan langsung menumpuknya begitu saja. Sifat ini menciptakan perilaku *monocle* non-eksplisit secara instan. Anda cukup menggunakan fungsi `switch_focus` untuk berselancar di dalam tumpukan (*stack*) jendela tersebut.
-
-Fitur unggulan `uwm` dalam manajemen jendela adalah **Fluid Grid Snapping**. Anda dapat menempatkan jendela secara *vertical split*, *horizontal split*, atau membaginya ke dalam kuadran 1/4 layar secara kumulatif. Mekanisme ini memberikan fleksibilitas *tiling* dinamis yang andal hingga **8 clients** per *workspace*, yang dapat dikombinasikan secara bebas dengan perilaku *monocle*.
-
----
-
-## Arsitektur Inti
-
-### Workspace Statis
-
-Seluruh data *workspace* dan manajemen *client* disimpan menggunakan struktur data statis berukuran tetap (*fixed-size*). Tidak ada alokasi memori dinamis (`malloc/calloc`) apa pun saat jendela baru dibuat, yang ada hanyalah manipulasi bit murni untuk setiap entitas jendela.
-Dengan pendekatan memori statis ini, data tidak perlu pernah dipindahkan atau diatur ulang di dalam memori. Alhasil, kompleksitas waktu dari hampir seluruh operasi di dalam `uwm` mendekati **O(1)** (Konstan).
-
-```c
-#define MAX_CLIENTS   8
-#define MAX_WORKSPACE 4
+```bash
+#~/.xinitrc
+exec nuwm
 ```
 
----
+### Uninstall
 
-## Sistem Snapping
-
-Penempatan jendela dilakukan melalui sistem snapping berbasis arah.
-
-Arah yang tersedia:
-
-- Kiri
-- Kanan
-- Atas
-- Bawah
-
-Perintah snapping bersifat kumulatif. Setiap tindakan memodifikasi geometri jendela secara bertahap dan dapat diprediksi.
-
-Melalui kombinasi operasi snapping, pengguna dapat membentuk berbagai susunan ruang kerja sesuai kebutuhan tanpa harus berpindah ke konfigurasi atau pengaturan lain.
-
-### Mekanika Kumulatif
-
-Karena `uwm` tidak memiliki mesin pengatur otomatis, Anda membentuk layout secara manual lewat urutan snapping yang logis pada jendela yang sedang fokus:
-
-- **Membuat Vertical Split (2 Jendela Berdampingan):**
-    1. Buka jendela pertama (otomatis berukuran penuh).
-    2. Tekan `Mod + Left` (jendela pertama menyusut mengisi 1/2 layar kiri).
-    3. Buka jendela kedua (otomatis menumpuk berukuran penuh).
-    4. Tekan `Mod + Right` (jendela kedua menyusut mengisi 1/2 layar kanan).
-- **Membuat Kuadran 1/4 Layar (Pojok Kanan Atas):**
-    1. Pada jendela aktif, tekan `Mod + Right` (mengisi 1/2 kanan).
-    2. Tekan `Mod + Up` (jendela otomatis menyusut lagi mengisi 1/4 kuadran kanan atas).
-    3. Menekan arah berlawanan (`Mod + Down`) akan mengembalikan ukuran jendela ke setengah layar penuh terlebih dahulu sebelum berpindah posisi.
-
----
-
-## Konfigurasi
-
-Seluruh konfigurasi dilakukan melalui:
-
-```c
-config.h
+```bash
+sudo make clean uninstall
 ```
 
-Isi dari file `config.h` hanya mengatur Mod Key dan pintasan  untuk menjalankan fungsi fungsi yang di sediakan. Anda juga bisa memanggil aplikasi dari `uwm` dengan bantuan makro `SHCMD(cmd)`  atau dengan memanggilnya langsung jika anda sudah menetapkan alamatnya.
+## Struktur Komunikasi IPC
 
-> ⚠️ **Penting:** Pastikan anda membuat pintasan untuk membuka Launcher dan perubahan konfigurasi memerlukan kompilasi ulang
+**nuwm** berkomunikasi menggunakan dua file di RAM (`tmpfs`) dan satu skrip kontrol di `$HOME`:
+
+- `/dev/shm/nuwm.in` → Pipe FIFO untuk menerima input perintah.
+- `/dev/shm/nuwm.out` → File biasa untuk menulis status/state `nuwm`.
+- `~/.nuwmrc` → Skrip Shell yang dieksekusi saat tombol `Super_L` ditekan.
+
+## Interaksi IPC
+
+### Mengirim Perintah ke `nuwm.in`
+
+Karena `nuwm.in` berbasis FIFO, Anda cukup mengalirkan string via `echo`:
+
+```bash
+echo "command" > /dev/shm/nuwm.in
+```
+
+### Membaca Status dari `nuwm.out`
+
+Anda bisa menggunakan `read` atau `cat` untuk membaca data disana:
+
+```bash
+read client < /dev/shm/nuwm.out
+# atau
+cat /dev/shm/nuwm.out
+```
+
+## Format Pembacaan `nuwm.out`
+
+`nuwm.out` digunakan untuk membaca state dari `nuwm` (`focus_curr`, `focus_prev`, dan `client_list`).
+
+Format penulisan string (dibaca dari kiri):
+
+1. **Karakter 1:** Slot client yang fokus saat ini (`focus_curr`).
+2. **Karakter 2:** Slot client yang fokus sebelumnya (`focus_prev`).
+3. **Karakter 3 dan seterusnya:** Daftar slot client yang aktif (`client_list`).
+
+**Contoh State:**
+
+- `00` → Tidak ada client (`focus_curr` dan `focus_prev` bernilai 0).
+- `101` → Ada client di slot 1; `focus_curr` mengarah ke slot 1.
+- `1212` → Ada client di slot 1 dan 2; `focus_curr` = slot 1, `focus_prev` = slot 2.
+
+## File Kontrol (`~/.nuwmrc`)
+
+`~/.nuwmrc` adalah file yang dieksekusi **nuwm** untuk memanggil perintah shell dari luar. Anda bisa memanfaatkannya untuk memanggil bar atau launcher seperti `nuin`, `dmenu` / `rofi`.
+
+Buat file kontrol tanpa perlu menambahkan izin eksekusi (`chmod +x` tidak diperlukan):
+
+```bash
+touch ~/.nuwmrc
+```
+
+## Keybind Tunggal
+
+**nuwm** sengaja dibangun dengan penggunaan CLI, tetapi **nuwm** tetap mendaftarkan **satu keybind utama** di tingkat sistem:
+
+| Keybind | Aksi |
+| --- | --- |
+| `Super_L` (Tombol Mod4) | Mengeksekusi skrip `~/.nuwmrc` via shell |
+
+Dengan Keybind inilah `~/.nuwmrc`  dieksekusi yang nantinya bisa digunakan untuk menajalankan script yang ada disana.
+
+## Mekanisme Parser Perintah
+
+Perintah dikirimkan melalui IPC FIFO (`/dev/shm/nuwm.in`). Parser nuwm menggunakan sistem **Zero-Space Parsing** yang fleksibel, di mana perintah, target, dan argumen dapat ditulis dengan atau tanpa spasi.
+
+> **Catatan:** Buffer input internal dibatasi maksimal **32 karakter** per satu kali kiriman string.
 > 
 
----
+### Format Umum
 
-## Pintasan Bawaan
-
-| Tombol | Aksi |
-| --- | --- |
-| Mod + Return | Membuka terminal |
-| Mod + d | Membuka menu |
-| Mod + Tab | Berpindah ke jendela berikutnya |
-| Mod + Shift + q | Menutup jendela aktif |
-| Mod + Shift + Escape | Keluar dari uwm |
-| Mod + Left | Snap ke kiri |
-| Mod + Right | Snap ke kanan |
-| Mod + Up | Snap ke atas |
-| Mod + Down | Snap ke bawah |
-| Mod + 1~4 | Berpindah workspace |
-| Mod + Shift + 1~4 | Mengirim jendela ke workspace tujuan |
-
----
-
-## Instalasi
-
-### Dependensi
-
-Arch Linux:
-
-```bash
-sudo pacman -S libxcb xcb-util-keysyms
+```
+<command>[target][argumen]
 ```
 
-### Kompilasi
+### Referensi Perintah
+
+| Command | Fungsi | Contoh | Detail / Catatan |
+| --- | --- | --- | --- |
+| **`q`** | Keluar dari nuwm | `q` | Menghentikan proses window manager |
+| **`:`** | Eksekusi perintah Bash | `:nutm` | Menjalankan sisa string perintah ke `/bin/bash` |
+| **`s`** | Tukar posisi (*swap*) slot | `s12` | Menukar slot client 1 dan slot client 2 |
+| **`f`** | Fokus & tampilkan client | `f1` | Memindahkan fokus dan menaikkan jendela ke paling atas |
+| **`g`** | Atur geometri (*geometry*) | `g1 w960 h1080 x0 y0` | Mengubah posisi/ukuran (`x`, `y`, `w`, `h`) |
+| **`k`** | Bunuh client (*force kill*) | `k` atau `k12` | Menutup paksa client |
+| **`m`** | Sembunyikan client (*unmap*) | `m` atau `m1` | Menyembunyikan jendela tanpa menghentikan prosesnya |
+
+> **Catatan:** Perintah `k` memanggil `xcb_kill_client` yang akan menutup koneksi X11 client secara paksa.
+> 
+
+### Fitur Parser
+
+#### **1. Target Implisit & Relatif (0–9)**
+
+- **Tanpa target ditulis:** Otomatis mengarah ke client yang sedang aktif (`focus_curr`).
+- **Target `1`–`9`:** Mengarah ke slot client ke-1 hingga ke-9 (`client_list[0..8]`).
+- **Target `0`:** Mengarah ke client yang aktif sebelumnya (`focus_prev`).
+- *Contoh:* `k` (bunuh client aktif), `k0` (bunuh client sebelumnya), `f0` (kembali fokus ke client sebelumnya).
+
+#### **2. Pengabaian Spasi (*Zero Spacing*)**
+
+Spasi bersifat opsional. Parser secara otomatis memisahkan huruf perintah, target slot, dan nilai argumen.
+
+- *Dengan spasi:* `g1 w960 x0`
+- *Tanpa spasi:* `g1w960x0`
+
+#### **3. Multi-Targeting**
+
+Eksekusi satu perintah ke beberapa slot secara berurutan dalam satu pemanggilan.
+
+- `f12` $\rightarrow$ Tampilkan dan berikan fokus pada client 1, lalu client 2.
+- `k12` $\rightarrow$ Bunuh client di slot 1 dan slot 2 secara berurutan.
+
+#### **4. Rangkaian Perintah (*Command Chaining*)**
+
+Beberapa perintah berbeda dapat digabungkan dalam satu string buffer tanpa perlu pemisah khusus.
+
+- `k12f3` $\rightarrow$ Bunuh client 1 dan 2 (`k12`), lalu fokus ke client 3 (`f3`).
+- `k:nutm` $\rightarrow$ Bunuh client saat ini (`k`), lalu jalankan perintah terminal (`:nutm`).
+
+## Penggunaan Lanjutan
+
+### 1. Emulasi Workspace (Non-Eksplisit)
+
+Karena **nuwm** tidak memiliki fitur *workspace*, Anda bisa memanfaatkan multi-target. Jika client 1 dan client 2 diset sebagai split, memanggil `f12` akan menampilkan keduanya secara bersamaan sehingga bertindak layaknya satu *workspace*.
+
+### 2. Pengaturan Geometri
+
+Parameter geometri bersifat opsional (`w`, `h`, `x`, `y`). Nilai yang tidak ditulis tidak akan diubah.
+
+#### Rumus Dasar Split & Ukuran Layar
+
+Untuk menentukan lebar (*width*) dan posisi (*x-offset*) secara dinamis berdasarkan lebar layar Anda ($W_{screen}$):
+
+$$
+\text{Lebar Split (Half Width)} = \frac{W_{screen}}{2}
+$$
+
+$$
+\text{Posisi Kanan (Right Offset)} = \frac{W_{screen}}{2}
+$$
+
+Contoh pada layar **Full HD ($1920 \times 1080$)**:
+
+- $W_{screen} = 1920$
+- Lebar Split Kiri/Kanan = $\frac{1920}{2} = 960$
+- Posisi $X$ Kanan = $960$
+
+**Contoh Perintah Geometri:**
+
+- **Fullscreen:** `g w1920 h1080 x0 y0`
+- **Split Kiri (Lebar 960, Posisi X=0):** `g w960 x0`
+- **Split Kanan (Lebar 960, Posisi X=960):** `g w960 x960`
+- **Layout 2 Client Split Vertikal Sekaligus:** `g12 w960 g2 x960`
+
+### 3. Dukungan Multi-Monitor
+
+**nuwm** secara teknis dapat digunakan pada setup *multi-monitor*. Karena `nuwm` tidak mengelola tata letak layar secara otomatis, pemetaan jendela antar-layar diserahkan sepenuhnya kepada pengguna melalui kalkulasi koordinat `X` dan `Y` dan ukuran jendela `W` dan `H` pada perintah geometris.
+
+**Contoh:** Jika Anda memiliki Monitor 1 (1920x1080) dan Monitor 2 (1920x1080) di sebelah kanan, Anda cukup mengirim perintah `g1 x1920 y0 w1920 h1080` untuk memindahkan jendela ke monitor kedua.
+
+> **Catatan:** Tetap periksa kembali `xrandr` anda, disana terdapat informasi mengenai ukuran dan posisi monitor
+> 
+
+
+## Integrasi Status Bar & Input Launcher
+
+> **Repository Terkait:** [nuin](https://github.com/Rhevalk/nuin)
+
+**nuwm** tidak memiliki status bar bawaan untuk menjaga ukuran biner dan penggunaan RAM tetap kecil. Sebagai pasangannya, Anda dapat menggunakan **nuin** sebuah bar dan *input launcher* minimalis yang dirancang khusus untuk bekerja secara *native* dengan **nuwm** melalui skrip `~/.nuwmrc`.
+
+`nuin` berfungsi ganda:
+
+- **Status Display:** Menampilkan indikator slot client yang aktif, jam/tanggal, serta persentase baterai.
+- **Interactive Launcher:** Mengirimkan *command* atau perintah yang Anda ketik langsung ke FIFO Pipe `/dev/shm/nuwm.in`.
+
+### Contoh Skrip `~/.nuwmrc`
+
+Skrip ini dieksekusi setiap kali tombol `Super_L` ditekan:
 
 ```bash
-git clone https://github.com/Rhevalk/uwm.git
-cd uwm
+#!/bin/sh
 
-cp config.def.h config.h
+read cap_str < /sys/class/power_supply/BAT0/capacity
+read clients < /dev/shm/nuwm.out
 
-make
-sudo make install
+now=$(date '+%a, %d %b|%H:%M')
+date_str="${now%|*}"
+time_str="${now#*|}"
+
+FG="#FDF7E1"
+BG="#1D2324"
+CC="#2A3334"
+CB="#394547"
+CA="#E15443"
+
+if [ -n "$clients" ]; then
+    curr="${clients%"${clients#?}"}"
+    rest="${clients#?}"
+    prev="${rest%"${rest#?}"}"
+    slots="${rest#?}"
+
+    i=1
+    while [ "$i" -le 9 ]; do
+        case "$curr$prev$slots" in
+            *"$i"*)
+                if [ "$i" = "$curr" ]; then
+                    bg=$CA
+                elif [ "$i" = "$prev" ]; then
+                    bg=$CB
+                else
+                    bg=$CC
+                fi
+                set -- "$@" -b "$i" "$FG" "$bg"
+                ;;
+        esac
+        i=$((i + 1))
+    done
+fi
+
+exec nuin -f "monospace:size=13" \
+    "$@" \
+    -b "[]=" "$FG" "$CC" \
+    -e "$FG" "$BG" \
+    -d "$date_str" "$FG" "$CC" \
+    -d "$time_str" "$FG" "$CB" \
+    -d "$cap_str%" "$FG" "$CA" \
+    > /dev/shm/nuwm.in
 ```
 
-## Menjalankan
-
-Tambahkan pada `.xinitrc`:
-
-```bash
-exec uwm
-```
+> **Catatan:** Anda dapat menyesuaikan skrip di atas, khususnya pada jalur pembacaan baterai (`sysfs`). Anda juga bisa menambahkan informasi sistem lainnya seperti penggunaan RAM, CPU load, atau indikator WiFi.
+>
