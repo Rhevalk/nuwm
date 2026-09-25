@@ -17,7 +17,7 @@ xcb_window_t       client_list[9];
 xcb_window_t       focus_current = XCB_NONE; 
 xcb_window_t       focus_previous = XCB_NONE; 
 
-void print_clients(void) {
+void print_clients() {
     char buf[12];
     char curr_ch = '0', prev_ch = '0';
     int len = 2;
@@ -172,7 +172,7 @@ void event_key_press(xcb_generic_event_t *ev) {
 }
 
 void handle_fifo(int fd) {
-    char buf[32] = {0};
+    char buf[64] = {0};
     if (read(fd, buf, sizeof(buf) - 1) <= 0) return;
 
     char *s = buf, *targets, *args, *p;
@@ -215,7 +215,8 @@ void handle_fifo(int fd) {
         s = p; 
     }
 }
-void handle_xevent(void) {
+
+void handle_xevent() {
     xcb_generic_event_t *ev;
     while ((ev = xcb_poll_for_event(system_connection))) {
         switch (ev->response_type & ~0x80) {
@@ -229,7 +230,7 @@ void handle_xevent(void) {
     }
 }
 
-int main(void) {
+int main() {
     signal(SIGCHLD, SIG_IGN);
 
     system_connection = xcb_connect(NULL, NULL);

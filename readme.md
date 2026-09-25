@@ -122,7 +122,7 @@ Dengan Keybind inilah `~/.nuwmrc`  dieksekusi yang nantinya bisa digunakan untuk
 
 Perintah dikirimkan melalui IPC FIFO (`/dev/shm/nuwm.in`). Parser nuwm menggunakan sistem **Zero-Space Parsing** yang fleksibel, di mana perintah, target, dan argumen dapat ditulis dengan atau tanpa spasi.
 
-> **Catatan:** Buffer input internal dibatasi maksimal **32 karakter** per satu kali kiriman string.
+> **Catatan:** Buffer input internal dibatasi maksimal **64 karakter** per satu kali kiriman string.
 > 
 
 ### Format Umum
